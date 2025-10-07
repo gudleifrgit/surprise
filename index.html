@@ -67,14 +67,21 @@
       }
     </style>
   </head>
+
   <body>
-    <div class="wrap"><div class="card fade" id="stage"></div></div>
+    <div class="wrap">
+      <div class="card fade" id="stage">Загрузка...</div>
+    </div>
 
     <script>
       window.addEventListener("DOMContentLoaded", () => {
         const tg = window.Telegram?.WebApp;
+        const el = document.getElementById("stage");
+
         if (!tg) {
-          console.error("❌ Telegram WebApp not found — запусти через Telegram");
+          el.innerHTML =
+            "<p>❌ Открой меня через Telegram WebApp (кнопку в боте)</p>";
+          console.error("Telegram WebApp not found — запусти через Telegram");
           return;
         }
 
@@ -82,12 +89,16 @@
         tg.expand();
         console.log("✅ WebApp initialized:", tg.initDataUnsafe);
 
-        const el = document.getElementById("stage");
-
         const dayLabel = (code) =>
-          ({ thu: "Вечер четверга", fri: "Вечер пятницы", wknd: "Выходные" }[code]);
+          ({ thu: "Вечер четверга", fri: "Вечер пятницы", wknd: "Выходные" }[
+            code
+          ]);
         const dayHuman = (code) =>
-          ({ thu: "в четверг вечером", fri: "в пятницу вечером", wknd: "на выходных" }[code]);
+          ({
+            thu: "в четверг вечером",
+            fri: "в пятницу вечером",
+            wknd: "на выходных",
+          }[code]);
 
         function send(mode, day) {
           const payload = { type: "sensorium_choice", mode, day };
@@ -97,9 +108,11 @@
           el.className = "card fade";
           el.innerHTML = `
             <p>Жду с нетерпением, 🥰 красотка</p>
-            <p><strong>Увидимся ${dayHuman(day)} ${mode === "museum" ? "" : " "}</strong></p>
+            <p><strong>Увидимся ${dayHuman(day)} ${
+            mode === "museum" ? "" : " "
+          }</strong></p>
           `;
-          tg.close();
+          setTimeout(() => tg.close(), 1000);
         }
 
         function chooseDay(mode) {
@@ -111,9 +124,15 @@
                 : "Тогда давай просто поужинаем. Когда удобно?"
             }</p>
             <div style="margin-top:6px">
-              <button class="btn" onclick="send('${mode}','thu')">${dayLabel("thu")}</button>
-              <button class="btn" onclick="send('${mode}','fri')">${dayLabel("fri")}</button>
-              <button class="btn" onclick="send('${mode}','wknd')">${dayLabel("wknd")}</button>
+              <button class="btn" onclick="send('${mode}','thu')">${dayLabel(
+            "thu"
+          )}</button>
+              <button class="btn" onclick="send('${mode}','fri')">${dayLabel(
+            "fri"
+          )}</button>
+              <button class="btn" onclick="send('${mode}','wknd')">${dayLabel(
+            "wknd"
+          )}</button>
             </div>`;
         }
 
@@ -145,6 +164,11 @@
               <button class="btn" onclick="renderStep(${i + 1})">Дальше</button>`;
           }
         }
+
+        // 🚀 запускаем первую сцену
+        window.send = send;
+        window.chooseDay = chooseDay;
+        window.renderStep = renderStep;
 
         renderStep(0);
       });

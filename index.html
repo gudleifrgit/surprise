@@ -94,12 +94,6 @@
     }
   }
 
-  // Auto-final if already chosen earlier
-  if (localStorage.getItem(K_DONE)==="1" && localStorage.getItem(K_MODE) && localStorage.getItem(K_DAY)) {
-    finish(); // uses stored values
-  } else {
-    renderStep(0);
-  }
 </script>
 </body>
 </html>

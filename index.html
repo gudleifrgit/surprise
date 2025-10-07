@@ -5,69 +5,74 @@
 <title>Sensorium · mini-quest</title>
 <meta name="theme-color" content="#000000">
 <style>
-  :root{--bg:#000;--fg:#eaeaea;--muted:#2a2a2a}
+  :root{--bg:#000;--fg:#eaeaea;--muted:#2a2a2a;--hint:#8b8b8b}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,Inter,Segoe UI,Roboto,Arial,sans-serif}
   .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
   .card{max-width:720px;width:100%;padding:22px 20px;border:1px solid var(--muted);border-radius:16px;background:rgba(255,255,255,.02);text-align:center}
+  p{margin:0 0 10px}
   .btn{display:inline-block;margin:6px 5px;padding:10px 16px;border-radius:12px;border:1px solid var(--muted);background:#111;color:#eee;cursor:pointer}
   .btn:active{transform:scale(.98)}
-  .fade{animation:fade .25s ease}
-  @keyframes fade{from{opacity:.3;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .fade{animation:fade .28s ease}
+  @keyframes fade{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
 </style>
 <body>
 <div class="wrap"><div class="card fade" id="stage"></div></div>
 
 <script>
-const tg = window.Telegram?.WebApp; tg?.ready(); tg?.expand();
+  const tg = window.Telegram?.WebApp;
+  tg?.ready();
 
-const el = document.getElementById("stage");
-const dayLabel = c => ({thu:"Вечер четверга", fri:"Вечер пятницы", wknd:"Выходные"}[c]);
-const dayHuman = c => ({thu:"в четверг вечером", fri:"в пятницу вечером", wknd:"на выходных"}[c]);
+  const el = document.getElementById("stage");
 
-function b64url(s){
-  return btoa(s).replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_');
-}
+  const dayLabel = code => ({thu:"Вечер четверга", fri:"Вечер пятницы", wknd:"Выходные"}[code]);
+  const dayHuman = code => ({thu:"в четверг вечером", fri:"в пятницу вечером", wknd:"на выходных"}[code]);
 
-function notifyBot(mode, day){
-  const bot = 'newsurpriseforlovely_bot'; // замените если нужно
-  const payload = {type:'sensorium_choice', mode, day};
-  const link = `https://t.me/${bot}?start=${b64url(JSON.stringify(payload))}`;
-  // откроет чат с ботом и триггернёт /start <payload>
-  tg?.openTelegramLink ? tg.openTelegramLink(link) : (location.href = link);
-  // можно закрыть WebApp сразу
-  setTimeout(()=>tg?.close?.(), 50);
-}
+  function send(mode, day) {
+    const payload = {type:"sensorium_choice", mode, day};
+    tg?.sendData?.(JSON.stringify(payload));
+    console.log("Sent:", payload);
 
-function chooseDay(mode){
-  el.className="card fade";
-  el.innerHTML = `
-    <p>${mode==="museum"?"😍 Отлично. Тогда выбирай:":"Тогда просто поужинаем. Когда удобно?"}</p>
-    <div style="margin-top:8px">
-      <button class="btn" onclick="notifyBot('${mode}','thu')">Вечер четверга</button>
-      <button class="btn" onclick="notifyBot('${mode}','fri')">Вечер пятницы</button>
-      <button class="btn" onclick="notifyBot('${mode}','wknd')">Выходные</button>
-    </div>`;
-}
+    el.className="card fade";
+    el.innerHTML = `
+      <p>Жду с нетерпением, 🥰 красотка</p>
+      <p><strong>Увидимся ${dayHuman(day)} ${mode==="museum"?"":" "}</strong></p>
+    `;
+    tg?.close?.();
+  }
 
-function renderStep(i){
-  const steps=[
-    {t:"Привет, Очаровашка. Мы оба любим хорроры и необычные вещи"},
-    {t:"В темноте есть что-то притягательное<br>и настоящее"},
-    {t:"Когда свет гаснет,<br>всё становится глубже"},
+  function chooseDay(mode) {
+    el.className="card fade";
+    el.innerHTML = `
+      <p>${mode==="museum"
+          ? "😍 Отлично. Тогда выбирай:"
+          : "Тогда давай просто поужинаем. Когда удобно?"}</p>
+      <div style="margin-top:6px">
+        <button class="btn" onclick="send('${mode}','thu')">${dayLabel("thu")}</button>
+        <button class="btn" onclick="send('${mode}','fri')">${dayLabel("fri")}</button>
+        <button class="btn" onclick="send('${mode}','wknd')">${dayLabel("wknd")}</button>
+      </div>`;
+  }
+
+  const steps = [
+    {t:"Привет, Очаровашка. Мы оба любим хорроры (пост-хорроры 🙂) и необычные вещи"},
+    {t:"В темноте есть что-то притягательное<br>Кажется, будто всё подлинное живёт именно там"},
+    {t:"Когда свет гаснет,<br>даже привычные вещи обретают глубину"},
     {t:"Приглашаю тебя в музей темноты — <strong>Сенсориум</strong>",buttons:true}
   ];
-  const s=steps[i];
-  el.className="card fade";
-  if(s.buttons){
-    el.innerHTML=`<p>${s.t}</p>
-      <button class="btn" onclick="chooseDay('museum')">😇 Вау, я согласна</button>
-      <button class="btn" onclick="chooseDay('dinner')">😅 Я там уже была</button>`;
-  } else {
-    el.innerHTML=`<p>${s.t}</p><button class="btn" onclick="renderStep(${i+1})">Дальше</button>`;
-  }
-}
 
-renderStep(0);
+  function renderStep(i){
+    const s = steps[i];
+    el.className="card fade";
+    if(s.buttons){
+      el.innerHTML=`<p>${s.t}</p>
+        <button class="btn" onclick="chooseDay('museum')">😇 Вау, я согласна</button>
+        <button class="btn" onclick="chooseDay('dinner')">😅 А я там уже была</button>`;
+    } else {
+      el.innerHTML=`<p>${s.t}</p><button class="btn" onclick="renderStep(${i+1})">Дальше</button>`;
+    }
+  }
+
+  renderStep(0);
 </script>
 </body>
 </html>

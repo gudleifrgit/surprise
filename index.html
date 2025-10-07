@@ -19,6 +19,20 @@
 
 <script>
 const tg = window.Telegram?.WebApp;
+tg?.ready(); tg?.expand();
+
+const el = document.getElementById("stage");
+
+// Диагностика контекста
+const ok = !!tg && !!tg.initDataUnsafe?.user?.id && !!tg.sendData;
+el.innerHTML = `<div class="card"><p>tg: ${!!tg}</p>
+<p>sendData: ${!!tg?.sendData}</p>
+<p>userId: ${tg?.initDataUnsafe?.user?.id || 'none'}</p>
+<p>bot: ${tg?.initDataUnsafe?.receiver?.username || 'unknown'}</p></div>`;
+console.log('initDataUnsafe:', tg?.initDataUnsafe);
+
+  
+const tg = window.Telegram?.WebApp;
 tg?.ready();
 
 const el = document.getElementById("stage");

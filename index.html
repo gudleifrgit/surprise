@@ -1,27 +1,78 @@
-<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>tg test</title>
-<body style="margin:0;background:#000;color:#0f0;font:16px/1.5 system-ui;padding:16px">
-<pre id="out">init…</pre>
-<button id="btn" style="padding:12px 16px;border:1px solid #0f0;background:#001;color:#0f0;border-radius:10px">sendData()</button>
-<script>
-const tg = window.Telegram?.WebApp;
-const out = document.getElementById('out');
-try {
-  tg?.ready(); tg?.expand();
-  const info = {
-    hasTG: !!tg,
-    hasSendData: !!tg?.sendData,
-    userId: tg?.initDataUnsafe?.user?.id || null,
-    bot: tg?.initDataUnsafe?.receiver?.username || null
-  };
-  out.textContent = JSON.stringify(info, null, 2);
-  // авто-пинг
-  if (info.hasSendData && info.userId) {
-    tg.sendData(JSON.stringify({type:'ping', t:Date.now()}));
-  }
-} catch(e) { out.textContent = 'error: '+e; }
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sensorium · mini-quest</title>
+<meta name="theme-color" content="#000000">
+<style>
+  :root{--bg:#000;--fg:#eaeaea;--muted:#2a2a2a;--hint:#8b8b8b}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,Inter,Segoe UI,Roboto,Arial,sans-serif}
+  .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{max-width:720px;width:100%;padding:22px 20px;border:1px solid var(--muted);border-radius:16px;background:rgba(255,255,255,.02);text-align:center}
+  p{margin:0 0 10px}
+  .btn{display:inline-block;margin:6px 5px;padding:10px 16px;border-radius:12px;border:1px solid var(--muted);background:#111;color:#eee;cursor:pointer}
+  .btn:active{transform:scale(.98)}
+  .fade{animation:fade .28s ease}
+  @keyframes fade{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+<body>
+<div class="wrap"><div class="card fade" id="stage"></div></div>
 
-document.getElementById('btn').onclick = () => {
-  tg?.sendData?.(JSON.stringify({type:'ping-click', t:Date.now()}));
-};
+<script>
+  const tg = window.Telegram?.WebApp;
+  tg?.ready();
+
+  const el = document.getElementById("stage");
+
+  const dayLabel = code => ({thu:"Вечер четверга", fri:"Вечер пятницы", wknd:"Выходные"}[code]);
+  const dayHuman = code => ({thu:"в четверг вечером", fri:"в пятницу вечером", wknd:"на выходных"}[code]);
+
+  function send(mode, day) {
+    const payload = {type:"sensorium_choice", mode, day};
+    tg?.sendData?.(JSON.stringify(payload));
+    console.log("Sent:", payload);
+
+    el.className="card fade";
+    el.innerHTML = `
+      <p>Жду с нетерпением, 🥰 красотка</p>
+      <p><strong>Увидимся ${dayHuman(day)} ${mode==="museum"?"":" "}</strong></p>
+    `;
+    tg?.close?.();
+  }
+
+  function chooseDay(mode) {
+    el.className="card fade";
+    el.innerHTML = `
+      <p>${mode==="museum"
+          ? "😍 Отлично. Тогда выбирай:"
+          : "Тогда давай просто поужинаем. Когда удобно?"}</p>
+      <div style="margin-top:6px">
+        <button class="btn" onclick="send('${mode}','thu')">${dayLabel("thu")}</button>
+        <button class="btn" onclick="send('${mode}','fri')">${dayLabel("fri")}</button>
+        <button class="btn" onclick="send('${mode}','wknd')">${dayLabel("wknd")}</button>
+      </div>`;
+  }
+
+  const steps = [
+    {t:"Привет, Очаровашка. Мы оба любим хорроры (пост-хорроры 🙂) и необычные вещи"},
+    {t:"В темноте есть что-то притягательное<br>Кажется, будто всё подлинное живёт именно там"},
+    {t:"Когда свет гаснет,<br>даже привычные вещи обретают глубину"},
+    {t:"Приглашаю тебя в музей темноты — <strong>Сенсориум</strong>",buttons:true}
+  ];
+
+  function renderStep(i){
+    const s = steps[i];
+    el.className="card fade";
+    if(s.buttons){
+      el.innerHTML=`<p>${s.t}</p>
+        <button class="btn" onclick="chooseDay('museum')">😇 Вау, я согласна</button>
+        <button class="btn" onclick="chooseDay('dinner')">😅 А я там уже была</button>`;
+    } else {
+      el.innerHTML=`<p>${s.t}</p><button class="btn" onclick="renderStep(${i+1})">Дальше</button>`;
+    }
+  }
+
+  renderStep(0);
 </script>
+</body>
+</html>

@@ -19,6 +19,15 @@
 <div class="wrap"><div class="card fade" id="stage"></div></div>
 
 <script>
+  window.addEventListener("DOMContentLoaded", () => {
+      const tg = window.Telegram?.WebApp;
+      if (!tg) {
+        console.error("Telegram WebApp not found");
+      } else {
+        tg.expand();
+        console.log("WebApp initialized", tg.initDataUnsafe);
+      }
+    });
   const tg = window.Telegram?.WebApp;
   tg?.ready();
 

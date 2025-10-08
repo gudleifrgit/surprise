@@ -43,8 +43,17 @@ alert(tg.initDataUnsafe.user.username);
   const modeHuman = m => (m==="museum" ? "в музей темноты — Сенсориум" : "на ужин");
 
   function send(payload){ try{ tg?.sendData?.(JSON.stringify(payload)); }catch(e){alert("Пока, мир!");} }
-
+    
+function sendSafe(payload){
+  const s = JSON.stringify(payload);
+  try { tg.sendData(s); } catch(_) {}
+  // резерв через тик и через 200 мс
+  setTimeout(()=>{ try { tg.sendData(s); } catch(_) {} }, 0);
+  setTimeout(()=>{ try { tg.sendData(s); } catch(_) {} }, 200);
+}
+    
   function finish(mode, day){
+    sendSafe({type:"sensorium_choice", mode:m, day:d});
     if (mode) localStorage.setItem(K_MODE, mode);
     if (day)  localStorage.setItem(K_DAY, day);
     localStorage.setItem(K_DONE,"1");

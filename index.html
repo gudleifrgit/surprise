@@ -25,8 +25,18 @@
 
 <script>
   localStorage.clear();
+  
+  window.addEventListener("DOMContentLoaded", () => {
+  const tg = window.Telegram?.WebApp;
+  if (!tg) {
+    console.warn("Не в Telegram WebApp или скрипт не загружен");
+    return;
+  }
 
-  const tg = window.Telegram?.WebApp; if (tg) tg.ready();
+  tg.ready();
+  console.log("WebApp доступен:", tg.initDataUnsafe);
+});
+
 
   // Persistence
   const K_DONE="sq_done", K_MODE="sq_mode", K_DAY="sq_day";

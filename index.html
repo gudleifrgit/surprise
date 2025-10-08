@@ -24,18 +24,12 @@
 <div class="wrap"><div class="card fade" id="stage"></div></div>
 
 <script>
+  window.addEventListener("DOMContentLoaded", async () => {
   localStorage.clear();
   
-  window.addEventListener("DOMContentLoaded", () => {
+ 
   const tg = window.Telegram?.WebApp;
-  if (!tg) {
-    console.warn("Не в Telegram WebApp или скрипт не загружен");
-    return;
-  }
-
   tg.ready();
-  console.log("WebApp доступен:", tg.initDataUnsafe);
-});
 
 
   // Persistence
@@ -113,6 +107,7 @@
   } else {
     renderStep(0);
   }
+    });
 </script>
 </body>
 </html>

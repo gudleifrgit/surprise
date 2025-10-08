@@ -42,7 +42,19 @@ alert(tg.initDataUnsafe.user.username);
   const dayHuman = code => ({thu:"в четверг вечером", fri:"в пятницу вечером", wknd:"на выходных"}[code]);
   const modeHuman = m => (m==="museum" ? "в музей темноты — Сенсориум" : "на ужин");
 
-  function send(payload){ try{ tg?.sendData?.(JSON.stringify(payload)); }catch(e){alert("Пока, мир!");} }
+  function send(payload) {
+  const json = JSON.stringify(payload);
+  if (!tg) return alert("WebApp не инициализирован");
+  try {
+    // основная попытка
+    tg.sendData(json);
+    console.log("sendData отправлен:", json);
+    // резерв на случай раннего вызова
+    setTimeout(() => tg.sendData(json), 150);
+  } catch (e) {
+    console.error("Ошибка при sendData:", e);
+  }
+}
 
   function finish(mode, day){
     if (mode) localStorage.setItem(K_MODE, mode);

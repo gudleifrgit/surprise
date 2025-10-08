@@ -42,7 +42,7 @@
   const dayHuman = code => ({thu:"в четверг вечером", fri:"в пятницу вечером", wknd:"на выходных"}[code]);
   const modeHuman = m => (m==="museum" ? "в музей темноты — Сенсориум" : "на ужин");
 
-  function send(payload){ try{ tg?.sendData?.(JSON.stringify(payload)); alert(JSON.stringify(payload)); }catch(e){alert("Пока, мир!");} }
+  function send(payload){ try{ tg?.sendData?.(JSON.stringify(payload)); alert(tg.initData); }catch(e){alert("Пока, мир!");} }
 
   function finish(mode, day){
     if (mode) localStorage.setItem(K_MODE, mode);

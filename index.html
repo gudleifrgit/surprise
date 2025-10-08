@@ -1,108 +1,108 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sensorium · mini-quest</title>
-  <meta name="theme-color" content="#000000" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root { --bg: #000; --fg: #eaeaea; --muted: #2a2a2a; --hint: #8b8b8b }
-    html, body {
-      height: 100%; margin: 0; background: var(--bg); color: var(--fg);
-      font: 16px/1.55 system-ui, Inter, Segoe UI, Roboto, Arial, sans-serif;
-    }
-    .wrap { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px }
-    .card { max-width: 720px; width: 100%; padding: 22px 20px; border: 1px solid var(--muted); border-radius: 16px; background: rgba(255,255,255,.02); text-align: center }
-    p { margin: 0 0 10px }
-    .btn { display: inline-block; margin: 6px 5px; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--muted); background: #111; color: #eee; cursor: pointer }
-    .btn:active { transform: scale(.98) }
-    .muted { color: var(--hint) }
-    .fade { animation: fade .28s ease }
-    @keyframes fade { from { opacity: .25; transform: translateY(4px) } to { opacity: 1; transform: none } }
-  </style>
-</head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sensorium · mini-quest</title>
+<meta name="theme-color" content="#000000">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+<style>
+  :root{--bg:#000;--fg:#eaeaea;--muted:#2a2a2a;--hint:#8b8b8b}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,Inter,Segoe UI,Roboto,Arial,sans-serif}
+  .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{max-width:720px;width:100%;padding:22px 20px;border:1px solid var(--muted);border-radius:16px;background:rgba(255,255,255,.02);text-align:center}
+  p{margin:0 0 10px}
+  .btn{display:inline-block;margin:6px 5px;padding:10px 16px;border-radius:12px;border:1px solid var(--muted);background:#111;color:#eee;cursor:pointer}
+  .btn:active{transform:scale(.98)}
+  .muted{color:var(--hint)}
+  .fade{animation:fade .28s ease}
+  @keyframes fade{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
+</style>
+    </head>
 <body>
-  <div class="wrap"><div class="card fade" id="stage">Загрузка...</div></div>
+<div class="wrap"><div class="card fade" id="stage"></div></div>
 
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      const tg = window.Telegram?.WebApp;
-      if (!tg) {
-        document.getElementById("stage").innerHTML = "<p>❌ Открой через Telegram WebApp</p>";
-        return;
-      }
-      tg.ready();
+<script>
+  localStorage.clear();
 
-      const K_DONE="sq_done", K_MODE="sq_mode", K_DAY="sq_day";
-      const el = document.getElementById("stage");
+  const tg = window.Telegram?.WebApp; if (tg) tg.ready();
 
-      const dayLabel = code => ({thu:"Вечер четверга", fri:"Вечер пятницы", wknd:"Выходные"}[code]);
-      const dayHuman = code => ({thu:"в четверг вечером", fri:"в пятницу вечером", wknd:"на выходных"}[code]);
-      const modeHuman = m => (m==="museum" ? "в музей темноты — Сенсориум" : "на ужин");
+  // Persistence
+  const K_DONE="sq_done", K_MODE="sq_mode", K_DAY="sq_day";
+  const el = document.getElementById("stage");
 
-      function send(payload){ try{ tg?.sendData?.(JSON.stringify(payload)); }catch(e){} }
+  // Text utils
+  const dayLabel = code => ({thu:"Вечер четверга", fri:"Вечер пятницы", wknd:"Выходные"}[code]);
+  const dayHuman = code => ({thu:"в четверг вечером", fri:"в пятницу вечером", wknd:"на выходных"}[code]);
+  const modeHuman = m => (m==="museum" ? "в музей темноты — Сенсориум" : "на ужин");
 
-      function finish(mode, day){
-        if (mode) localStorage.setItem(K_MODE, mode);
-        if (day)  localStorage.setItem(K_DAY, day);
-        localStorage.setItem(K_DONE,"1");
+  function send(payload){ try{ tg?.sendData?.(JSON.stringify(payload)); }catch(e){} }
 
-        const m = localStorage.getItem(K_MODE);
-        const d = localStorage.getItem(K_DAY);
+  function finish(mode, day){
+    if (mode) localStorage.setItem(K_MODE, mode);
+    if (day)  localStorage.setItem(K_DAY, day);
+    localStorage.setItem(K_DONE,"1");
 
-        el.className="card fade";
-        el.innerHTML = `
-          <p>Жду с нетерпением, 🥰 красотка </p>
-          <p><strong>Увидимся ${dayHuman(d)} ${m==="museum"?"":" "}</strong></p>
-        `;
-        send({type:"sensorium_choice", mode:m, day:d});
-      }
+    const m = localStorage.getItem(K_MODE);
+    const d = localStorage.getItem(K_DAY);
 
-      function chooseDay(mode){
-        el.className="card fade";
-        el.innerHTML = `
-          <p>${mode==="museum"
-              ? "😍 Отлично. Тогда выбирай:"
-              : "Тогда давай просто поужинаем где-нибудь. Когда удобно?"}</p>
-          <div style="margin-top:6px">
-            <button class="btn" data-day="thu">${dayLabel("thu")}</button>
-            <button class="btn" data-day="fri">${dayLabel("fri")}</button>
-            <button class="btn" data-day="wknd">${dayLabel("wknd")}</button>
-          </div>
-        `;
-        el.querySelectorAll("[data-day]").forEach(b=>{
-          b.onclick=()=>finish(mode, b.dataset.day);
-        });
-      }
+    el.className="card fade";
+    el.innerHTML = `
+      <p>Жду с нетерпением, 🥰 красотка </p>
+      <p><strong>Увидимся ${dayHuman(d)} ${m==="museum"?"":" "}</strong></p>
+    `;
+    send({type:"sensorium_choice", mode:m, day:d});
+  }
 
-      const steps = [
-        { t:`Привет, Очаровашка. Мы оба любим хорроры (пост-хорроры 🙂) и необычные вещи`, next:1 },
-        { t:`В темноте есть что-то притягательное<br>Кажется, будто всё подлинное живёт именно там`, next:2 },
-        { t:`Когда свет гаснет,<br>даже привычные вещи обретают глубину`, next:3 },
-        { t:`Приглашаю тебя в музей темноты - <strong>Сенсориум</strong>`,
-          buttons:[
-            { text:"😇 Вау, я согласна", action:()=>chooseDay("museum") },
-            { text:"😅 А я там уже была", action:()=>chooseDay("dinner") }
-          ]
-        }
-      ];
-
-      function renderStep(i){
-        const s = steps[i];
-        el.className="card fade";
-        if (s.buttons){
-          el.innerHTML = `<p>${s.t}</p>` + s.buttons.map(b=>`<button class="btn">${b.text}</button>`).join("");
-          [...el.querySelectorAll(".btn")].forEach((btn,idx)=>btn.onclick=s.buttons[idx].action);
-        } else {
-          el.innerHTML = `<p>${s.t}</p><button class="btn">Дальше</button>`;
-          el.querySelector(".btn").onclick = ()=>renderStep(s.next);
-        }
-      }
-
-      renderStep(0);
+  function chooseDay(mode){
+    el.className="card fade";
+    el.innerHTML = `
+      <p>${mode==="museum"
+          ? "😍 Отлично. Тогда выбирай:"
+          : "Тогда давай просто поужинаем где-нибудь. Когда удобно?"}</p>
+      <div style="margin-top:6px">
+        <button class="btn" data-day="thu">${dayLabel("thu")}</button>
+        <button class="btn" data-day="fri">${dayLabel("fri")}</button>
+        <button class="btn" data-day="wknd">${dayLabel("wknd")}</button>
+      </div>
+    `;
+    el.querySelectorAll("[data-day]").forEach(b=>{
+      b.onclick=()=>finish(mode, b.dataset.day);
     });
-  </script>
+  }
+
+  // Four-step flow
+  const steps = [
+    { t:`Привет, Очаровашка. Мы оба любим хорроры (пост-хорроры 🙂) и необычные вещи`, next:1 },
+    { t:`В темноте есть что-то притягательное<br>Кажется, будто всё подлинное живёт именно там`, next:2 },
+    { t:`Когда свет гаснет,<br>даже привычные вещи обретают глубину`, next:3 },
+    { t:`Приглашаю тебя в музей темноты - <strong>Сенсориум</strong>`,
+      buttons:[
+        { text:"😇 Вау, я согласна", action:()=>chooseDay("museum") },
+        { text:"😅 А я там уже была", action:()=>chooseDay("dinner") }
+      ]
+    }
+  ];
+
+  function renderStep(i){
+    const s = steps[i];
+    el.className="card fade";
+    if (s.buttons){
+      el.innerHTML = `<p>${s.t}</p>` + s.buttons.map(b=>`<button class="btn">${b.text}</button>`).join("");
+      [...el.querySelectorAll(".btn")].forEach((btn,idx)=>btn.onclick=s.buttons[idx].action);
+    } else {
+      el.innerHTML = `<p>${s.t}</p><button class="btn">Дальше</button>`;
+      el.querySelector(".btn").onclick = ()=>renderStep(s.next);
+    }
+  }
+
+  // Auto-final if already chosen earlier
+  if (localStorage.getItem(K_DONE)==="1" && localStorage.getItem(K_MODE) && localStorage.getItem(K_DAY)) {
+    finish(); // uses stored values
+  } else {
+    renderStep(0);
+  }
+</script>
 </body>
 </html>

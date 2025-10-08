@@ -44,7 +44,7 @@
 
   function send(payload) {
   const json = JSON.stringify(payload);
-fetch("https://surprise-back-3lna.vercel.app.vercel.app/api/webapp", {
+fetch("https://surprise-back-3lna.vercel.app/api/webapp", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: json
